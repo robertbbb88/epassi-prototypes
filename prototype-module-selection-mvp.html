@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Epassi Sports — Module Selection (MVP)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #BBBBBB;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 32px 0;
+        }
+
+        .device {
+            width: 375px;
+            background: #F2F2F2;
+            border-radius: 44px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px; background: #F2F2F2;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; font-size: 12px; font-weight: 600; color: #1A1A1A;
+        }
+
+        .screen { display: none; flex-direction: column; min-height: 768px; background: #F2F2F2; animation: fadeSlide 0.22s ease; }
+        .screen.active { display: flex; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateX(18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Progress ─────────────────────────────────────────────────────── */
+        .progress-bar { display: flex; justify-content: center; gap: 6px; padding: 16px 0 4px; }
+        .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: #D8D8D8; transition: all 0.25s; }
+        .progress-dot.active { background: #1A1A1A; width: 22px; border-radius: 3px; }
+        .progress-dot.done   { background: #4DC375; }
+
+        /* ── Question shell ───────────────────────────────────────────────── */
+        .q-wrap  { padding: 20px 24px 32px; flex: 1; display: flex; flex-direction: column; }
+        .q-step  { font-size: 11px; font-weight: 700; color: #999; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+        .q-title { font-size: 25px; font-weight: 800; color: #1A1A1A; line-height: 1.2; margin-bottom: 6px; }
+        .q-sub   { font-size: 15px; color: #999; margin-bottom: 24px; }
+
+        /* ── Multi-select chips ───────────────────────────────────────────── */
+        .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 24px; }
+        .chip {
+            padding: 9px 16px; border-radius: 100px; border: 2px solid #E0E0E0;
+            background: white; font-size: 14px; font-weight: 500; color: #1A1A1A;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .chip.selected { background: #1A1A1A; border-color: #1A1A1A; color: white; }
+
+        /* ── Postcode input ───────────────────────────────────────────────── */
+        .postcode-input {
+            width: 100%; padding: 14px 16px; border-radius: 14px;
+            border: 2px solid #E0E0E0; background: white;
+            font-size: 20px; font-weight: 600; color: #1A1A1A; letter-spacing: 0.08em;
+            outline: none; transition: border-color 0.15s; margin-bottom: 10px;
+            font-family: inherit;
+        }
+        .postcode-input:focus { border-color: #1A1A1A; }
+        .postcode-input::placeholder { font-weight: 400; letter-spacing: 0; color: #BBB; font-size: 15px; }
+        .postcode-hint { font-size: 13px; color: #AAA; margin-bottom: 24px; }
+
+        /* ── Buttons ──────────────────────────────────────────────────────── */
+        .btn {
+            width: 100%; padding: 15px; background: #1A1A1A; color: white;
+            border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
+            cursor: pointer; margin-top: auto; transition: opacity 0.15s;
+        }
+        .btn:disabled { opacity: 0.25; cursor: default; }
+        .btn.outline  { background: transparent; color: #1A1A1A; border: 2px solid #D0D0D0; margin-top: 8px; }
+        .btn.ghost    { background: transparent; color: #999; border: none; font-size: 14px; font-weight: 500; margin-top: 8px; text-decoration: underline; text-underline-offset: 3px; }
+
+        /* ── Loading ──────────────────────────────────────────────────────── */
+        .loading-wrap {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 40px 32px; gap: 18px;
+        }
+        .spinner {
+            width: 44px; height: 44px; border: 3px solid #E0E0E0;
+            border-top-color: #1A1A1A; border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-title { font-size: 17px; font-weight: 700; color: #1A1A1A; text-align: center; }
+        .loading-sub   { font-size: 14px; color: #999; text-align: center; line-height: 1.55; }
+
+        /* ── Recommendation screen ────────────────────────────────────────── */
+        .rec-wrap { padding: 18px 18px 20px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .rec-eyebrow {
+            font-size: 11px; font-weight: 700; color: #888; letter-spacing: 0.1em;
+            text-transform: uppercase; text-align: center; margin-bottom: 10px;
+        }
+        .rec-title { font-size: 26px; font-weight: 800; color: #1A1A1A; margin-bottom: 4px; }
+        .rec-rationale { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 4px; }
+
+        /* Precision notice — the honest caveat */
+        .precision-notice {
+            background: #F8F8F8; border: 1.5px solid #E8E8E8; border-radius: 11px;
+            padding: 10px 13px; margin-bottom: 14px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .precision-text  { font-size: 13px; color: #888; line-height: 1.4; flex: 1; }
+        .precision-link  { font-size: 13px; font-weight: 700; color: #1A1A1A; white-space: nowrap; cursor: pointer; }
+
+        /* ── Benefit cards ────────────────────────────────────────────────── */
+        .bcard { border-radius: 20px; padding: 17px; margin-bottom: 10px; }
+        .bcard.rec   { background: #1E2230; }
+        .bcard.other { background: white; border: 2px solid #EBEBEB; }
+
+        .bcard-head  { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .bcard-title { font-size: 16px; font-weight: 800; }
+        .bcard.rec   .bcard-title { color: white; }
+        .bcard.other .bcard-title { color: #1A1A1A; }
+
+        .bcard-check { width: 24px; height: 24px; background: #4DC375; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        .bcard-desc { font-size: 13px; line-height: 1.5; margin-bottom: 5px; }
+        .bcard.rec   .bcard-desc { color: #7A8BAA; }
+        .bcard.other .bcard-desc { color: #666; }
+
+        .bcard-insight { font-size: 12px; font-style: italic; margin-bottom: 11px; }
+        .bcard.rec   .bcard-insight { color: #7ECFA0; }
+        .bcard.other .bcard-insight { color: #999; }
+
+        .preview-lbl { font-size: 10px; font-weight: 700; color: #5EBFAA; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 7px; }
+
+        .studio-row { background: rgba(255,255,255,0.06); border-radius: 9px; padding: 8px 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 9px; }
+        .studio-ico  { width: 32px; height: 32px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+        .studio-name { font-size: 13px; font-weight: 600; color: white; }
+        .studio-dist { font-size: 11px; color: #6A7B9A; }
+
+        .act-chips-rec { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
+        .act-chip-rec  { background: rgba(77,195,117,0.16); color: #6ECFA0; border-radius: 100px; padding: 5px 10px; font-size: 12px; font-weight: 600; }
+
+        .voucher-row { background: rgba(255,255,255,0.06); border-radius: 9px; padding: 8px 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 9px; }
+        .v-ico  { width: 32px; height: 32px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+        .v-name { font-size: 13px; font-weight: 600; color: white; }
+        .v-cat  { font-size: 11px; color: #6A7B9A; }
+
+        .sel-btn {
+            width: 100%; padding: 12px; border-radius: 12px;
+            font-size: 14px; font-weight: 700; cursor: pointer; border: none; margin-top: 5px;
+        }
+        .bcard.rec   .sel-btn { background: white; color: #1A1A1A; }
+        .bcard.other .sel-btn { background: transparent; color: #1A1A1A; border: 2px solid #D0D0D0; }
+
+        .switch-notice {
+            background: white; border: 1.5px solid #EBEBEB; border-radius: 11px;
+            padding: 10px 13px; font-size: 13px; color: #777; text-align: center; margin-bottom: 10px;
+        }
+
+        /* ── Home screens ─────────────────────────────────────────────────── */
+        .home-wrap  { flex: 1; display: flex; flex-direction: column; }
+        .home-hdr   { padding: 14px 20px 6px; display: flex; justify-content: space-between; align-items: center; }
+        .home-greet { font-size: 22px; font-weight: 800; color: #1A1A1A; }
+        .home-bell  { width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+        .home-search { margin: 6px 20px; background: white; border-radius: 12px; padding: 11px 14px; font-size: 14px; color: #BBB; display: flex; align-items: center; gap: 8px; }
+
+        .home-card { margin: 8px 20px; background: white; border-radius: 16px; padding: 15px; }
+        .home-card-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .home-card-title { font-size: 15px; font-weight: 700; color: #1A1A1A; }
+        .home-badge { width: 34px; height: 34px; background: #1A1A1A; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+        .home-card-sub { font-size: 13px; color: #999; }
+
+        .alert-card  { margin: 8px 20px; background: #F5F0FF; border-radius: 16px; padding: 14px; border-left: 4px solid #7C3AED; }
+        .alert-hdr   { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+        .alert-title { font-size: 14px; font-weight: 700; color: #1A1A1A; }
+        .alert-days  { font-size: 10px; font-weight: 800; color: #7C3AED; letter-spacing: 0.05em; }
+        .alert-desc  { font-size: 13px; color: #555; margin: 5px 0 9px; }
+        .alert-btn   { background: #1A1A1A; color: white; border: none; border-radius: 8px; padding: 7px 13px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+        .ar-prog-bar  { height: 4px; background: #F0F0F0; border-radius: 2px; margin: 8px 0; }
+        .ar-prog-fill { height: 100%; background: #4DC375; border-radius: 2px; width: 0%; }
+        .ar-add-btn   { background: #1A1A1A; color: white; border: none; border-radius: 9px; padding: 7px 13px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+        .green-card { margin: 8px 20px; background: #EDFFF5; border: 1.5px solid #4DC375; border-radius: 16px; padding: 14px; }
+
+        .nav { display: flex; background: white; padding: 8px 0 22px; border-top: 1px solid #F0F0F0; margin-top: auto; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 3px 0; }
+        .nav-ico  { font-size: 21px; }
+        .nav-lbl  { font-size: 10px; color: #AAA; font-weight: 500; }
+        .nav-item.active .nav-lbl { color: #1A1A1A; font-weight: 700; }
+        .chk svg { display: block; }
+    </style>
+</head>
+<body>
+<div class="device">
+    <div class="status-bar"><span>9:41</span><span>●●●●◦ 🔋</span></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Q1 — ACTIVITIES
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen active" id="s-q1">
+        <div class="progress-bar">
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+        </div>
+        <div class="q-wrap">
+            <div class="q-step">Step 1 of 2</div>
+            <div class="q-title">How do you like to stay active?</div>
+            <div class="q-sub">Select all that apply — we'll find your best match.</div>
+
+            <div class="chips">
+                <div class="chip" onclick="toggleChip(this,'gym')">🏋️ Gym &amp; weights</div>
+                <div class="chip" onclick="toggleChip(this,'classes')">🤸 Fitness classes</div>
+                <div class="chip" onclick="toggleChip(this,'swimming')">🏊 Swimming</div>
+                <div class="chip" onclick="toggleChip(this,'running')">🏃 Running</div>
+                <div class="chip" onclick="toggleChip(this,'cycling')">🚴 Cycling</div>
+                <div class="chip" onclick="toggleChip(this,'yoga')">🧘 Yoga &amp; pilates</div>
+                <div class="chip" onclick="toggleChip(this,'football')">⚽ Team sports</div>
+                <div class="chip" onclick="toggleChip(this,'walking')">🚶 Walking &amp; hiking</div>
+                <div class="chip" onclick="toggleChip(this,'home')">🏠 Home workouts</div>
+                <div class="chip" onclick="toggleChip(this,'other')">+ Other</div>
+            </div>
+
+            <button class="btn" id="q1-btn" disabled onclick="go('s-q2')">Next</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Q2 — LOCATION
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-q2">
+        <div class="progress-bar">
+            <div class="progress-dot done"></div>
+            <div class="progress-dot active"></div>
+        </div>
+        <div class="q-wrap">
+            <div class="q-step">Step 2 of 2</div>
+            <div class="q-title">Where are you based?</div>
+            <div class="q-sub">We'll check which studios and facilities are near you.</div>
+
+            <input
+                class="postcode-input"
+                id="postcode-input"
+                type="text"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="Enter your postcode"
+                oninput="onPostcodeInput()"
+            />
+            <div class="postcode-hint">Your German postcode — 5 digits</div>
+
+            <button class="btn" id="q2-btn" disabled onclick="startCheck()">Show my recommendation →</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LOADING
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-loading">
+        <div class="loading-wrap">
+            <div class="spinner"></div>
+            <div class="loading-title">Checking your area…</div>
+            <div class="loading-sub">Looking up studios, gyms and fitness centres near your postcode.</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         RECOMMENDATION — FITNESS NETWORK
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-rec-fitness">
+        <div class="rec-wrap">
+            <div class="rec-eyebrow">✦ Best match based on 2 answers</div>
+            <div class="rec-title">Choose your benefit</div>
+            <div class="rec-rationale" id="fn-rationale">Based on your activities and location, Fitness Network is your best fit.</div>
+
+            <!-- Precision notice -->
+            <div class="precision-notice">
+                <div class="precision-text">Answer a few more questions for a more tailored recommendation.</div>
+                <div class="precision-link" onclick="go('s-upsell')">Refine →</div>
+            </div>
+
+            <div class="bcard rec">
+                <div class="bcard-head">
+                    <div class="bcard-title">Fitness Network</div>
+                    <div class="bcard-check chk"><svg width="11" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4.5L4.5 8L11 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="bcard-desc">Unlimited access to 13,500+ gyms, studios and fitness centres across Germany.</div>
+                <div class="bcard-insight" id="fn-insight">Studios near you that match your activities.</div>
+                <div style="margin-bottom:11px">
+                    <div class="preview-lbl">Studios near you</div>
+                    <div id="fn-studios"></div>
+                </div>
+                <button class="sel-btn" onclick="go('s-home-fitness')">Select Fitness Network</button>
+            </div>
+
+            <div class="bcard other">
+                <div class="bcard-head"><div class="bcard-title">Activity Reward</div></div>
+                <div class="bcard-desc">Log your workouts and earn vouchers at Adidas, Rossmann and more.</div>
+                <div class="bcard-insight">Best fit if you prefer training independently</div>
+                <button class="sel-btn" onclick="go('s-home-activity')">Select Activity Reward</button>
+            </div>
+
+            <div class="switch-notice">You can switch between benefits every three months.</div>
+            <button class="btn outline" onclick="go('s-home-fitness')">Skip for now</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         RECOMMENDATION — ACTIVITY REWARDS
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-rec-activity">
+        <div class="rec-wrap">
+            <div class="rec-eyebrow">✦ Best match based on 2 answers</div>
+            <div class="rec-title">Choose your benefit</div>
+            <div class="rec-rationale" id="ar-rationale">Based on your activities and location, Activity Reward is your best fit.</div>
+
+            <!-- Precision notice -->
+            <div class="precision-notice">
+                <div class="precision-text">Answer a few more questions for a more tailored recommendation.</div>
+                <div class="precision-link" onclick="go('s-upsell')">Refine →</div>
+            </div>
+
+            <div class="bcard rec">
+                <div class="bcard-head">
+                    <div class="bcard-title">Activity Reward</div>
+                    <div class="bcard-check chk"><svg width="11" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4.5L4.5 8L11 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="bcard-desc">Log your workouts and earn up to €25/month in vouchers.</div>
+                <div class="bcard-insight" id="ar-insight">Your activities already qualify — start logging from day one.</div>
+                <div style="margin-bottom:11px">
+                    <div class="preview-lbl">Your activities qualify</div>
+                    <div class="act-chips-rec" id="ar-chips"></div>
+                    <div class="preview-lbl" style="margin-top:8px">Redeem at</div>
+                    <div class="voucher-row">
+                        <div class="v-ico">👟</div>
+                        <div><div class="v-name">Adidas</div><div class="v-cat">Sports &amp; Clothing</div></div>
+                    </div>
+                    <div class="voucher-row">
+                        <div class="v-ico">💊</div>
+                        <div><div class="v-name">Rossmann</div><div class="v-cat">Health &amp; Beauty</div></div>
+                    </div>
+                </div>
+                <button class="sel-btn" onclick="go('s-home-activity')">Select Activity Reward</button>
+            </div>
+
+            <div class="bcard other">
+                <div class="bcard-head"><div class="bcard-title">Fitness Network</div></div>
+                <div class="bcard-desc">Unlimited access to 13,500+ gyms, studios and fitness centres.</div>
+                <div class="bcard-insight" id="fn-alt-insight">Available if you prefer studio access</div>
+                <button class="sel-btn" onclick="go('s-home-fitness')">Select Fitness Network</button>
+            </div>
+
+            <div class="switch-notice">You can switch between benefits every three months.</div>
+            <button class="btn outline" onclick="go('s-home-activity')">Skip for now</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         UPSELL — "Tell us more" (not functional in MVP — tests demand)
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-upsell">
+        <div class="q-wrap" style="align-items:center;justify-content:center;text-align:center;">
+            <div style="font-size:40px;margin-bottom:20px">🚧</div>
+            <div style="font-size:20px;font-weight:800;color:#1A1A1A;margin-bottom:10px">Coming soon</div>
+            <div style="font-size:15px;color:#999;line-height:1.6;margin-bottom:32px">A more personalised flow — with questions about your goals, training style and how often you exercise — is on the way.</div>
+            <button class="btn" style="margin-top:0" onclick="history.back() || go('s-rec-fitness')">← Back to my recommendation</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         HOME — FITNESS NETWORK
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-home-fitness">
+        <div class="home-wrap">
+            <div class="home-hdr">
+                <div class="home-greet">Hi Anna! 👋</div>
+                <div class="home-bell">🔔</div>
+            </div>
+            <div class="home-search">🔍 Search studios</div>
+            <div class="home-card">
+                <div class="home-card-hdr">
+                    <div class="home-card-title">Fitness Network</div>
+                    <div class="home-badge">12</div>
+                </div>
+                <div class="home-card-sub">12 check-ins this month</div>
+            </div>
+            <div class="alert-card">
+                <div class="alert-hdr">
+                    <div class="alert-title">Benefit change window</div>
+                    <div class="alert-days">20 DAYS LEFT</div>
+                </div>
+                <div class="alert-desc">You can switch to Activity Reward until the 20th of the month.</div>
+                <button class="alert-btn">Change now</button>
+            </div>
+            <div class="nav">
+                <div class="nav-item active"><div class="nav-ico">🏠</div><div class="nav-lbl">Home</div></div>
+                <div class="nav-item"><div class="nav-ico">🔍</div><div class="nav-lbl">Discover</div></div>
+                <div class="nav-item"><div class="nav-ico">🎁</div><div class="nav-lbl">Benefits</div></div>
+                <div class="nav-item"><div class="nav-ico">👤</div><div class="nav-lbl">Profile</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         HOME — ACTIVITY REWARDS
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-home-activity">
+        <div class="home-wrap">
+            <div class="home-hdr">
+                <div class="home-greet">Hi Anna! 👋</div>
+                <div class="home-bell">🔔</div>
+            </div>
+            <div class="home-search">🔍 Search</div>
+            <div class="home-card">
+                <div class="home-card-hdr">
+                    <div class="home-card-title">Activity Reward</div>
+                    <div class="home-badge" style="background:#4DC375">0</div>
+                </div>
+                <div class="home-card-sub">0/5 activities this month</div>
+                <div class="ar-prog-bar"><div class="ar-prog-fill"></div></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+                    <div style="font-size:13px;color:#999">Voucher: <strong style="color:#1A1A1A">Rewe</strong></div>
+                    <button class="ar-add-btn">+ Add activity</button>
+                </div>
+            </div>
+            <div class="green-card">
+                <div style="font-size:14px;font-weight:800;color:#1A1A1A;margin-bottom:4px">Get active, get rewards 🎉</div>
+                <div style="font-size:13px;color:#555;margin-bottom:8px">Log 5 activities this month to earn €25 in vouchers.</div>
+                <div style="font-size:12px;color:#999">How does it work? →</div>
+            </div>
+            <div class="nav">
+                <div class="nav-item active"><div class="nav-ico">🏠</div><div class="nav-lbl">Home</div></div>
+                <div class="nav-item"><div class="nav-ico">🔍</div><div class="nav-lbl">Discover</div></div>
+                <div class="nav-item"><div class="nav-ico">🎁</div><div class="nav-lbl">Benefits</div></div>
+                <div class="nav-item"><div class="nav-ico">👤</div><div class="nav-lbl">Profile</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+let activities = [];
+let coverage   = { count: 0, area: 'your area', good: false };
+let lastRec    = 'fitness'; // track which rec screen to go back to
+
+const FN_ACTIVITIES = ['gym', 'classes', 'swimming'];
+
+const CHIP_LABELS = {
+    gym:      '🏋️ Gym & weights',
+    classes:  '🤸 Fitness classes',
+    swimming: '🏊 Swimming',
+    running:  '🏃 Running',
+    cycling:  '🚴 Cycling',
+    yoga:     '🧘 Yoga & pilates',
+    football: '⚽ Team sports',
+    walking:  '🚶 Walking & hiking',
+    home:     '🏠 Home workouts',
+};
+
+const STUDIO_POOL = {
+    gym:      { ico: '🏋️', name: 'FitX Mitte',           dist: '0.9 km away' },
+    classes:  { ico: '🤸', name: 'McFit Training Centre', dist: '0.7 km away' },
+    swimming: { ico: '🏊', name: 'Stadtbad Mitte',        dist: '1.2 km away' },
+    yoga:     { ico: '🧘', name: 'Urban Yoga Berlin',     dist: '0.6 km away' },
+    cycling:  { ico: '🚴', name: 'FISZ Spinning Studio',  dist: '0.8 km away' },
+    default:  { ico: '💪', name: 'Clever Fit Prenzlberg', dist: '0.8 km away' },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Input handlers
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleChip(el, val) {
+    el.classList.toggle('selected');
+    activities = el.classList.contains('selected')
+        ? [...activities, val]
+        : activities.filter(v => v !== val);
+    document.getElementById('q1-btn').disabled = activities.length === 0;
+}
+
+function onPostcodeInput() {
+    const val = document.getElementById('postcode-input').value.trim();
+    document.getElementById('q2-btn').disabled = val.length < 4;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Coverage simulation
+// ─────────────────────────────────────────────────────────────────────────────
+function simulateCoverage(postcode) {
+    const first  = postcode.trim().charAt(0);
+    const second = parseInt(postcode.trim().charAt(1)) || 0;
+
+    const areaNames = {
+        '0':'Leipzig', '1':'Berlin', '2':'Hamburg', '3':'Hannover',
+        '4':'Dortmund', '5':'Cologne', '6':'Frankfurt', '7':'Stuttgart',
+        '8':'Munich', '9':'Nuremberg'
+    };
+
+    const denseCities = ['1','2','5','6','8'];
+    const count = denseCities.includes(first)
+        ? 11 + (second % 7)
+        : 2  + (second % 5);
+
+    return { count, area: areaNames[first] || 'your area', good: count >= 8 };
+}
+
+function startCheck() {
+    const pc = document.getElementById('postcode-input').value;
+    coverage = simulateCoverage(pc);
+    go('s-loading');
+    setTimeout(buildAndShowRec, 1800);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Routing
+//
+// With only 2 signals (activities + location), the rule is simple:
+//   • Gym/classes/swimming selected AND good coverage → FN
+//   • Anything else → AR
+//   • Gym/pool selected but limited coverage → AR with explanation
+// ─────────────────────────────────────────────────────────────────────────────
+function buildAndShowRec() {
+    const needsFacility = activities.some(a => FN_ACTIVITIES.includes(a));
+    const goFN          = needsFacility && coverage.good;
+    const lowCovWanted  = needsFacility && !coverage.good;
+
+    if (goFN) {
+        buildFitnessRec();
+        lastRec = 's-rec-fitness';
+        go('s-rec-fitness');
+    } else {
+        buildActivityRec(lowCovWanted);
+        lastRec = 's-rec-activity';
+        go('s-rec-activity');
+    }
+}
+
+function buildFitnessRec() {
+    const facilityActs = activities.filter(a => FN_ACTIVITIES.includes(a));
+    const actText = facilityActs.length > 0
+        ? facilityActs.map(a => CHIP_LABELS[a]?.replace(/^[^\s]+\s/,'') || a).join(' and ')
+        : 'your activities';
+
+    document.getElementById('fn-rationale').textContent =
+        `You prefer ${actText}, and there are ${coverage.count} Fitness Network studios near ${coverage.area}. Unlimited check-ins, no monthly cap.`;
+
+    document.getElementById('fn-insight').textContent =
+        `${coverage.count} studios within reach — including facilities that match your activities.`;
+
+    // Studios matched to selected activities
+    const list = [];
+    for (const a of activities) {
+        if (STUDIO_POOL[a] && list.length < 3) list.push(STUDIO_POOL[a]);
+    }
+    while (list.length < 3) list.push(STUDIO_POOL.default);
+    const unique = list.filter((s,i,arr) => arr.findIndex(x=>x.name===s.name)===i).slice(0,3);
+
+    document.getElementById('fn-studios').innerHTML = unique.map(s =>
+        `<div class="studio-row">
+            <div class="studio-ico">${s.ico}</div>
+            <div><div class="studio-name">${s.name}</div><div class="studio-dist">${s.dist}</div></div>
+        </div>`
+    ).join('');
+}
+
+function buildActivityRec(lowCovReason) {
+    if (lowCovReason) {
+        document.getElementById('ar-rationale').textContent =
+            `You prefer gym-based training, but we only found ${coverage.count} studios near ${coverage.area}. Activity Reward works anywhere — no studio needed.`;
+        document.getElementById('fn-alt-insight').textContent =
+            `Limited coverage near ${coverage.area} — only ${coverage.count} studios`;
+    } else {
+        const outdoorActs = activities.filter(a => !FN_ACTIVITIES.includes(a) && a !== 'other');
+        const actText = outdoorActs.length > 0
+            ? outdoorActs.map(a => CHIP_LABELS[a]?.replace(/^[^\s]+\s/,'') || a).slice(0,2).join(' and ')
+            : 'your activities';
+        document.getElementById('ar-rationale').textContent =
+            `You prefer ${actText} — no studio needed. Log 5 activities a month to earn €25 in vouchers.`;
+    }
+
+    document.getElementById('ar-insight').textContent =
+        'Log any qualifying activity — your choices already count.';
+
+    // Qualifying chips — all selected activities
+    const allActs = activities.filter(a => a !== 'other');
+    document.getElementById('ar-chips').innerHTML = allActs.length > 0
+        ? allActs.map(a => `<div class="act-chip-rec">${CHIP_LABELS[a] || a}</div>`).join('')
+        : '<div class="act-chip-rec">🏃 Any qualifying activity</div>';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Navigation
+// ─────────────────────────────────────────────────────────────────────────────
+function go(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector('.device').scrollTop = 0;
+}
+
+// Back from upsell stub
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[onclick*="history.back"]').forEach(el => {
+        el.onclick = () => go(lastRec);
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epassi — Module Selection Prototypes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #F2F2F2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+        .wrap { max-width: 480px; width: 100%; }
+        .label {
+            font-size: 11px; font-weight: 700; color: #999;
+            letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;
+        }
+        h1 { font-size: 28px; font-weight: 800; color: #1A1A1A; margin-bottom: 8px; }
+        .subtitle { font-size: 15px; color: #888; margin-bottom: 40px; line-height: 1.5; }
+        .card {
+            background: white; border-radius: 20px; padding: 24px;
+            margin-bottom: 14px; text-decoration: none;
+            display: block; border: 2px solid #EBEBEB;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .card:hover { border-color: #1A1A1A; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .card-title { font-size: 17px; font-weight: 800; color: #1A1A1A; }
+        .card-badge {
+            font-size: 11px; font-weight: 700; color: white;
+            background: #1A1A1A; border-radius: 100px; padding: 3px 10px;
+        }
+        .card-badge.green { background: #4DC375; }
+        .card-desc { font-size: 14px; color: #888; line-height: 1.5; margin-bottom: 12px; }
+        .card-meta { font-size: 13px; color: #BBB; }
+        .card-meta span { color: #1A1A1A; font-weight: 600; }
+        .note {
+            background: #F8F8F8; border: 1.5px solid #E8E8E8; border-radius: 12px;
+            padding: 14px 16px; font-size: 13px; color: #888; line-height: 1.6; margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="label">Epassi One V1 · H1 Discovery</div>
+    <h1>Module Selection<br>Prototypes</h1>
+    <p class="subtitle">Interactive prototypes for the personalised module selection hypothesis. For user testing — March 2026.</p>
+
+    <a class="card" href="prototype-module-selection.html">
+        <div class="card-head">
+            <div class="card-title">MVP 1 — Full personalisation</div>
+            <div class="card-badge">5 questions</div>
+        </div>
+        <div class="card-desc">Collects goal, activities, lifestyle, location, and exercise frequency. Produces a weighted recommendation with a personalised rationale.</div>
+        <div class="card-meta">Higher precision · <span>More user input required</span></div>
+    </a>
+
+    <a class="card" href="prototype-module-selection-mvp.html">
+        <div class="card-head">
+            <div class="card-title">MVP 2 — Lightweight</div>
+            <div class="card-badge green">2 questions</div>
+        </div>
+        <div class="card-desc">Collects activities and location only. Faster to complete. The recommendation screen communicates the reduced precision with an option to refine.</div>
+        <div class="card-meta">Lower precision · <span>Faster to complete</span></div>
+    </a>
+
+    <div class="note">
+        Depending on feedback from user interviews, engineering estimates, and data readiness, one of these prototypes will be selected as the basis for the V1 build.
+    </div>
+</div>
+</body>
+</html>
