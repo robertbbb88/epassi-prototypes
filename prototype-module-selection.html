@@ -211,6 +211,39 @@
     </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="position:fixed;inset:0;background:#BBBBBB;display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;">
+    <div style="background:white;border-radius:28px;padding:36px 28px;width:100%;max-width:340px;box-shadow:0 24px 80px rgba(0,0,0,0.25);">
+        <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Epassi · Research Prototype</div>
+        <div style="font-size:22px;font-weight:800;color:#1A1A1A;margin-bottom:8px;">Protected</div>
+        <div style="font-size:14px;color:#888;margin-bottom:28px;line-height:1.5;">Enter the access code to view this prototype.</div>
+        <input id="gate-input" type="password" placeholder="Access code" autocomplete="off"
+            style="width:100%;padding:14px 16px;border:2px solid #EBEBEB;border-radius:14px;font-size:16px;outline:none;font-family:inherit;color:#1A1A1A;margin-bottom:12px;transition:border-color 0.15s;"
+            onkeydown="if(event.key==='Enter')gateCheck()">
+        <div id="gate-error" style="font-size:13px;color:#E85454;margin-bottom:12px;display:none;">Incorrect code. Try again.</div>
+        <button onclick="gateCheck()"
+            style="width:100%;padding:16px;background:#1A1A1A;color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
+            Continue →
+        </button>
+    </div>
+</div>
+<script>
+    const GATE_PW = 'epassi2026';
+    function gateCheck() {
+        const val = document.getElementById('gate-input').value;
+        if (val === GATE_PW) {
+            document.getElementById('gate').style.display = 'none';
+        } else {
+            document.getElementById('gate-error').style.display = 'block';
+            const inp = document.getElementById('gate-input');
+            inp.style.borderColor = '#E85454';
+            inp.value = '';
+            inp.focus();
+        }
+    }
+</script>
+
 <div class="device">
     <div class="status-bar"><span>9:41</span><span>●●●●◦ 🔋</span></div>
 
