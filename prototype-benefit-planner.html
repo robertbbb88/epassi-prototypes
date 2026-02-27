@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Epassi Benefit Planner — Prototype</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      gap: 16px;
+    }
+
+    .demo-label {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── Phone Frame ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #fff;
+      border-radius: 52px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      height: 44px;
+      padding: 14px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .status-time { font-size: 15px; font-weight: 700; color: #30363F; }
+    .status-icons { font-size: 12px; color: #30363F; letter-spacing: -0.02em; }
+
+    /* ── Screens ── */
+    .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    .scroll-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .scroll-content::-webkit-scrollbar { display: none; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      height: 82px;
+      border-top: 1px solid #F0F0F0;
+      display: flex;
+      padding: 8px 0 20px;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+    .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-label { font-size: 11px; color: #6E7279; font-weight: 500; }
+    .nav-item.active .nav-label { color: #30363F; font-weight: 800; }
+    .nav-item.active .nav-icon { filter: none; }
+
+    /* ── Search Bar ── */
+    .search-bar {
+      margin: 10px 16px 10px;
+      background: #fff;
+      border-radius: 99px;
+      border: 1.5px solid #E5E7EB;
+      padding: 11px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #9CA3AF;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── Category Tabs ── */
+    .category-tabs {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 8px;
+      border-bottom: 1px solid #EBEBEB;
+      flex-shrink: 0;
+    }
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 12px;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6E7279;
+      border-bottom: 2.5px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-bottom: -1px;
+    }
+    .cat-tab.active { color: #30363F; font-weight: 700; border-bottom-color: #30363F; }
+
+    /* ── Section Header ── */
+    .section-header {
+      padding: 16px 16px 10px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #30363F;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── Provider Card ── */
+    .provider-card {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      gap: 12px;
+    }
+    .provider-thumb {
+      width: 110px;
+      height: 86px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+    .agreement-badge {
+      position: absolute;
+      top: 0; left: 0;
+      background: #E5007D;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 0 0 8px 0;
+    }
+    .provider-name { font-size: 15px; font-weight: 700; color: #30363F; }
+    .provider-distance { font-size: 12px; color: #6E7279; margin: 2px 0; }
+    .provider-tags { font-size: 12px; color: #6E7279; }
+
+    /* ── Favourites ── */
+    .favourites-row {
+      display: flex;
+      padding: 0 16px 4px;
+      gap: 10px;
+    }
+    .fav-card {
+      width: 148px; height: 96px;
+      border-radius: 14px;
+      background: #E5007D;
+      display: flex; flex-direction: column;
+      align-items: flex-start; justify-content: flex-end;
+      color: #fff; font-size: 13px; font-weight: 700;
+      padding: 12px; gap: 4px; flex-shrink: 0;
+    }
+    .fav-add {
+      width: 148px; height: 96px;
+      border-radius: 14px;
+      border: 1.5px dashed #D0D0D0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #6E7279; font-size: 12px; text-align: center;
+      padding: 10px; gap: 6px; flex-shrink: 0; line-height: 1.4;
+    }
+
+    /* ────────────────────────────────── */
+    /* ── PLANNER UI ── */
+    /* ────────────────────────────────── */
+
+    .for-you-wrap { padding-bottom: 4px; }
+    .for-you-header {
+      padding: 14px 16px 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .for-you-title { font-size: 18px; font-weight: 800; color: #30363F; }
+    .new-badge {
+      background: #6C10B9;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.04em;
+    }
+    .for-you-sub { font-size: 12px; color: #6E7279; padding: 2px 16px 10px; }
+
+    .rec-cards { display: flex; flex-direction: column; gap: 8px; padding: 0 16px 4px; }
+
+    .rec-card {
+      background: #F8F3FB;
+      border: 1.5px solid #E0D0F4;
+      border-radius: 16px;
+      padding: 14px 44px 14px 14px;
+      cursor: pointer;
+      position: relative;
+    }
+    .rec-card:active { opacity: 0.8; transform: scale(0.99); }
+    .rec-signal {
+      font-size: 11px; font-weight: 700; color: #6C10B9;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      margin-bottom: 4px;
+    }
+    .rec-title { font-size: 15px; font-weight: 800; color: #30363F; margin-bottom: 3px; }
+    .rec-desc { font-size: 12px; color: #6E7279; line-height: 1.5; margin-bottom: 10px; }
+    .rec-footer { display: flex; align-items: center; justify-content: space-between; }
+    .rec-tag {
+      background: #fff;
+      border: 1px solid #E0D0F4;
+      border-radius: 99px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #6C10B9;
+    }
+    .rec-chevron {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 22px; color: #C4A8E8; font-weight: 300;
+    }
+
+    /* ── Onboarding ── */
+    .ob-header {
+      background: linear-gradient(180deg, #FF4F1F 0%, #E5007D 50%, #5500B3 100%);
+      padding: 24px 22px 28px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .ob-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; opacity: 0.7; margin-bottom: 12px;
+    }
+    .ob-title { font-size: 24px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+    .ob-sub { font-size: 13px; opacity: 0.85; line-height: 1.5; }
+    .ob-progress { display: flex; gap: 5px; margin-top: 18px; }
+    .ob-dot { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.3); flex: 1; }
+    .ob-dot.on { background: #fff; }
+
+    .ob-body { padding: 20px 18px; }
+    .ob-section { font-size: 12px; font-weight: 700; color: #6E7279; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+
+    .interest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .interest-tile {
+      background: #F8F3FB; border: 2px solid #EBE0F8;
+      border-radius: 14px; padding: 14px 10px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px; cursor: pointer;
+    }
+    .interest-tile.on { background: #EDE0FB; border-color: #6C10B9; }
+    .interest-emoji { font-size: 26px; }
+    .interest-label { font-size: 12px; font-weight: 600; color: #30363F; text-align: center; line-height: 1.3; }
+
+    .lifestyle-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .lifestyle-opt {
+      background: #F8F3FB; border: 2px solid #EBE0F8;
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .lifestyle-opt.on { background: #EDE0FB; border-color: #6C10B9; }
+    .lifestyle-opt-label { font-size: 14px; font-weight: 600; color: #30363F; }
+
+    .btn-purple {
+      background: #6C10B9; color: #fff;
+      font-size: 15px; font-weight: 700;
+      padding: 15px; border-radius: 14px;
+      border: none; width: 100%; cursor: pointer;
+    }
+    .btn-purple:active { opacity: 0.85; }
+
+    /* ── Done Screen ── */
+    .done-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 28px 22px; text-align: center;
+    }
+    .done-icon {
+      width: 80px; height: 80px;
+      background: #EDE0FB; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin-bottom: 20px;
+    }
+    .done-title { font-size: 24px; font-weight: 800; color: #30363F; margin-bottom: 10px; }
+    .done-body { font-size: 14px; color: #6E7279; line-height: 1.6; margin-bottom: 24px; }
+    .preview-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+    .preview-item {
+      background: #F8F3FB; border: 1px solid #EBE0F8;
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px; text-align: left;
+    }
+    .preview-item-text { font-size: 13px; color: #6E7279; flex: 1; line-height: 1.4; }
+    .preview-item-text strong { color: #30363F; }
+
+    /* ── Detail Screen ── */
+    .detail-topbar {
+      padding: 10px 16px 12px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid #F0F0F0; flex-shrink: 0;
+    }
+    .back-btn {
+      width: 34px; height: 34px;
+      background: #F5F5F7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; cursor: pointer; flex-shrink: 0; color: #30363F;
+    }
+    .detail-topbar-title { font-size: 16px; font-weight: 700; color: #30363F; }
+
+    .detail-hero {
+      padding: 22px 18px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .detail-signal-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 99px; padding: 4px 12px;
+      font-size: 11px; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .detail-hero-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; line-height: 1.2; }
+    .detail-hero-desc { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+
+    .why-box {
+      margin: 14px 16px 0;
+      background: #FFFBEB; border: 1px solid #FDE68A;
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; gap: 8px;
+    }
+    .why-box-text { font-size: 13px; color: #6E7279; line-height: 1.55; }
+    .why-box-text strong { color: #30363F; }
+
+    .detail-section { padding: 18px 16px 0; }
+    .detail-section-label {
+      font-size: 11px; font-weight: 700; color: #6E7279;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
+    }
+
+    .budget-card {
+      background: #F8F3FB; border: 1.5px solid #E0D0F4;
+      border-radius: 14px; padding: 14px;
+    }
+    .budget-cat-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .budget-cat-name { font-size: 13px; font-weight: 700; color: #6C10B9; }
+    .budget-big { font-size: 26px; font-weight: 800; color: #30363F; }
+    .budget-big span { font-size: 13px; color: #6E7279; font-weight: 400; }
+    .budget-bar-bg {
+      background: #E8DFF5; border-radius: 99px; height: 7px;
+      margin-top: 10px; overflow: hidden;
+    }
+    .budget-bar-fill { height: 100%; border-radius: 99px; }
+    .budget-bar-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #6E7279; margin-top: 5px;
+    }
+
+    .providers-list { display: flex; flex-direction: column; gap: 0; }
+    .provider-row {
+      display: flex; align-items: center; padding: 10px 0;
+      border-bottom: 1px solid #F5F5F5; gap: 12px;
+    }
+    .provider-row:last-child { border-bottom: none; }
+    .prov-thumb {
+      width: 80px; height: 64px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0; overflow: hidden;
+    }
+
+    .detail-cta-wrap { padding: 14px 16px 20px; }
+    .btn-pink {
+      background: #E5007D; color: #fff;
+      font-size: 15px; font-weight: 700;
+      padding: 15px; border-radius: 14px;
+      border: none; width: 100%; cursor: pointer;
+    }
+    .btn-pink:active { opacity: 0.85; }
+    .cta-note { text-align: center; font-size: 11px; color: #6E7279; margin-top: 8px; }
+
+    /* ── Balances Screen ── */
+    .bal-header { padding: 14px 18px 0; font-size: 22px; font-weight: 800; color: #30363F; }
+    .bal-tabs {
+      display: flex; padding: 0 16px;
+      border-bottom: 1px solid #F0F0F0; flex-shrink: 0;
+    }
+    .bal-tab {
+      padding: 9px 12px; font-size: 13px; font-weight: 600;
+      color: #6E7279; border-bottom: 2px solid transparent; cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .bal-tab.on { color: #30363F; border-bottom-color: #30363F; }
+
+    .bal-card {
+      margin: 10px 16px 0;
+      background: #fff; border: 1px solid #E8E8E8;
+      border-radius: 16px; padding: 16px;
+    }
+    .bal-cat-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 2px;
+    }
+    .bal-cat-label { font-size: 12px; font-weight: 700; color: #6E7279; text-transform: uppercase; letter-spacing: 0.08em; }
+    .bal-amount-row {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .bal-amount { font-size: 26px; font-weight: 800; color: #30363F; }
+    .bal-sub { font-size: 12px; color: #6E7279; }
+    .util-wrap {
+      background: #F0F0F0; border-radius: 99px; height: 7px;
+      position: relative; overflow: visible; margin-bottom: 5px;
+    }
+    .util-fill { height: 7px; border-radius: 99px; position: absolute; top: 0; left: 0; }
+    .util-marker {
+      position: absolute; top: -4px;
+      width: 2px; height: 15px;
+      background: #30363F; border-radius: 1px;
+    }
+    .util-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #6E7279;
+    }
+    .util-alert {
+      margin-top: 10px; border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .alert-orange { background: #FFF7ED; color: #C2410C; }
+    .alert-red    { background: #FEF2F2; color: #DC2626; }
+    .alert-purple { background: #F3EBF9; color: #6C10B9; cursor: pointer; }
+    .alert-purple:active { opacity: 0.8; }
+
+    .divider { height: 1px; background: #F5F5F5; margin: 10px 16px; }
+
+    /* ── Benefit Calendar ── */
+    .cal-entry-card {
+      margin: 0 16px 4px;
+      background: #F0E6FB;
+      border: 1.5px solid #DDD0F5;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cal-entry-card:active { opacity: 0.85; }
+    .cal-entry-icon {
+      width: 44px; height: 44px;
+      background: #6C10B9;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .cal-entry-text { flex: 1; }
+    .cal-entry-title { font-size: 14px; font-weight: 800; color: #30363F; margin-bottom: 2px; }
+    .cal-entry-sub { font-size: 12px; color: #6E7279; }
+
+    /* Calendar screen */
+    .cal-screen-bg { background: #F8F3FB; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .cal-header {
+      background: linear-gradient(145deg, #6C10B9, #9B3ED4);
+      padding: 14px 16px 20px;
+      flex-shrink: 0;
+    }
+    .cal-header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .cal-back {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; cursor: pointer; color: #fff; flex-shrink: 0;
+    }
+    .cal-title { font-size: 17px; font-weight: 800; color: #fff; }
+    .cal-meta { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+
+    .cal-stats {
+      display: flex; gap: 8px; margin-top: 14px;
+    }
+    .cal-stat {
+      flex: 1;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .cal-stat-label { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .cal-stat-value { font-size: 16px; font-weight: 800; color: #fff; }
+    .cal-stat-value.green { color: #86EFAC; }
+    .cal-stat-value.yellow { color: #FDE68A; }
+
+    .cal-scroll { flex: 1; overflow-y: auto; padding: 12px 12px 16px; }
+    .cal-scroll::-webkit-scrollbar { display: none; }
+
+    .cal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .cal-month {
+      background: #fff;
+      border: 1.5px solid #EBE0F8;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .cal-month.done { opacity: 0.55; background: #F5F5F5; border-color: #E5E7EB; }
+    .cal-month.current { border-color: #6C10B9; background: #F0E6FB; }
+    .cal-month.urgent { border-color: #FF612F; background: #FFF4F0; }
+
+    .cal-month-name { font-size: 13px; font-weight: 800; color: #30363F; margin-bottom: 6px; }
+
+    .cal-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700;
+      border-radius: 99px; padding: 2px 8px; margin-bottom: 6px;
+    }
+    .status-done { background: #DCFCE7; color: #15803D; }
+    .status-current { background: #EDE0FB; color: #6C10B9; }
+    .status-upcoming { background: #F3F4F6; color: #6E7279; }
+    .status-urgent { background: #FEE2D5; color: #C2410C; }
+
+    .cal-amount { font-size: 14px; font-weight: 800; color: #6C10B9; margin-bottom: 4px; }
+    .cal-amount.done-color { color: #15803D; }
+    .cal-amount.upcoming { color: #30363F; }
+    .cal-activity { font-size: 11px; color: #6E7279; line-height: 1.4; margin-bottom: 6px; }
+    .cal-tip { font-size: 10px; color: #6C10B9; font-style: italic; }
+    .cal-tip.orange { color: #C2410C; }
+  </style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="position:fixed;inset:0;background:#BBBBBB;display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;">
+    <div style="background:white;border-radius:28px;padding:36px 28px;width:100%;max-width:340px;box-shadow:0 24px 80px rgba(0,0,0,0.25);">
+        <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Epassi · Research Prototype</div>
+        <div style="font-size:22px;font-weight:800;color:#1A1A1A;margin-bottom:8px;">Protected</div>
+        <div style="font-size:14px;color:#888;margin-bottom:28px;line-height:1.5;">Enter the access code to view this prototype.</div>
+        <input id="gate-input" type="password" placeholder="Access code" autocomplete="off"
+            style="width:100%;padding:14px 16px;border:2px solid #EBEBEB;border-radius:14px;font-size:16px;outline:none;font-family:inherit;color:#1A1A1A;margin-bottom:12px;transition:border-color 0.15s;"
+            onkeydown="if(event.key==='Enter')gateCheck()">
+        <div id="gate-error" style="font-size:13px;color:#E85454;margin-bottom:12px;display:none;">Incorrect code. Try again.</div>
+        <button onclick="gateCheck()"
+            style="width:100%;padding:16px;background:#1A1A1A;color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
+            Continue →
+        </button>
+    </div>
+</div>
+<script>
+    const GATE_PW = 'epassi2026';
+    function gateCheck() {
+        const val = document.getElementById('gate-input').value;
+        if (val === GATE_PW) {
+            document.getElementById('gate').style.display = 'none';
+        } else {
+            document.getElementById('gate-error').style.display = 'block';
+            const inp = document.getElementById('gate-input');
+            inp.style.borderColor = '#E85454';
+            inp.value = '';
+            inp.focus();
+        }
+    }
+</script>
+
+<div class="demo-label">Epassi Benefit Planner · Interactive Prototype</div>
+
+<div class="phone">
+  <div class="status-bar">
+    <span class="status-time">11:43</span>
+    <span class="status-icons">● 0:00  ▐▌▌  78%</span>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Onboarding Step 1
+  ══════════════════════════════════ -->
+  <div class="screen active" id="screen-ob1">
+    <div class="ob-header">
+      <div class="ob-eyebrow">✦ Benefit Planner</div>
+      <div class="ob-title">Let's personalise your benefits</div>
+      <div class="ob-sub">Tell us what you enjoy and we'll recommend the best ways to use your budget throughout the year.</div>
+      <div class="ob-progress">
+        <div class="ob-dot on"></div>
+        <div class="ob-dot"></div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="ob-body">
+        <div class="ob-section">What do you enjoy?</div>
+        <div class="interest-grid">
+          <div class="interest-tile on" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🎿</span>
+            <span class="interest-label">Skiing & Snowboard</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">💪</span>
+            <span class="interest-label">Gym & Fitness</span>
+          </div>
+          <div class="interest-tile on" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🎬</span>
+            <span class="interest-label">Cinema & Theatre</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🧘</span>
+            <span class="interest-label">Wellness & Massage</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🚴</span>
+            <span class="interest-label">Cycling</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🎵</span>
+            <span class="interest-label">Music & Concerts</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🏊</span>
+            <span class="interest-label">Swimming</span>
+          </div>
+          <div class="interest-tile" onclick="this.classList.toggle('on')">
+            <span class="interest-emoji">🌿</span>
+            <span class="interest-label">Outdoor Activities</span>
+          </div>
+        </div>
+        <button class="btn-purple" onclick="showScreen('ob3')">Set up my planner →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Onboarding Done
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-ob3">
+    <div class="done-screen">
+      <div class="done-icon">✨</div>
+      <div class="done-title">Your planner is ready</div>
+      <div class="done-body">Based on your interests, we've prepared your first recommendations. We'll keep them fresh as the seasons change.</div>
+      <div class="preview-list">
+        <div class="preview-item">
+          <span style="font-size:22px;">❄️</span>
+          <span class="preview-item-text"><strong>Snow this weekend</strong> — ski pass options near Helsinki</span>
+        </div>
+        <div class="preview-item">
+          <span style="font-size:22px;">🎬</span>
+          <span class="preview-item-text"><strong>Mission Impossible is out</strong> — cinema 500m from you</span>
+        </div>
+      </div>
+      <button class="btn-purple" onclick="showScreen('discovery')">See my recommendations →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Discovery
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-discovery">
+    <div class="search-bar">🔍 Search for providers or services</div>
+    <div class="category-tabs">
+      <div class="cat-tab active">🍴 Lunch</div>
+      <div class="cat-tab">🏃 Sport</div>
+      <div class="cat-tab">🎭 Culture</div>
+      <div class="cat-tab">💆 Massage</div>
+      <div class="cat-tab">🦷 Dental</div>
+      <div class="cat-tab">❤️ Health</div>
+    </div>
+    <div class="scroll-content">
+
+      <!-- FOR YOU -->
+      <div class="for-you-wrap">
+        <div class="for-you-header">
+          <span class="for-you-title">For You</span>
+          <span class="new-badge">NEW</span>
+        </div>
+        <div class="for-you-sub">Based on your interests and what's happening near you</div>
+        <div class="rec-cards">
+          <div class="rec-card" onclick="showScreen('rec-ski')">
+            <div class="rec-signal">❄️ Snow forecast this weekend</div>
+            <div class="rec-title">Hit the slopes while you can</div>
+            <div class="rec-desc">Snow is forecast near Helsinki. Use your Sport benefit for a ski pass or equipment rental.</div>
+            <div class="rec-footer">
+              <span class="rec-tag">🏃 Sport · €280 left</span>
+            </div>
+            <span class="rec-chevron">›</span>
+          </div>
+          <div class="rec-card" onclick="showScreen('rec-cinema')">
+            <div class="rec-signal">🎬 New release near you</div>
+            <div class="rec-title">Mission Impossible is out</div>
+            <div class="rec-desc">You rated the last film ★★★★★ on IMDB. The new instalment opens at a cinema 500m away next week.</div>
+            <div class="rec-footer">
+              <span class="rec-tag">🎭 Culture · €200 left</span>
+            </div>
+            <span class="rec-chevron">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENEFIT CALENDAR entry card -->
+      <div class="cal-entry-card" onclick="showScreen('calendar')" style="margin-top:8px;">
+        <div class="cal-entry-icon">📅</div>
+        <div class="cal-entry-text">
+          <div class="cal-entry-title">Your 2026 Benefit Calendar</div>
+          <div class="cal-entry-sub">See how to spread your budget across the year</div>
+        </div>
+        <span style="color:#6C10B9;font-size:20px;">›</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-header" style="font-size:20px;">Your Favourites</div>
+      <div class="favourites-row">
+        <div class="fav-card">
+          <span style="font-size:22px;">%</span>
+          <span>Agreements</span>
+        </div>
+        <div class="fav-add">
+          <span style="font-size:22px; border:1.5px solid #D0D0D0; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">♡</span>
+          Add favourites by <strong>tapping the heart icon.</strong>
+        </div>
+      </div>
+
+      <div class="section-header" style="font-size:20px;">
+        Near You
+        <span style="font-size:12px;font-weight:700;border:2px solid #30363F;padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:6px;">🗺 MAP</span>
+      </div>
+      <div style="display:flex;gap:4px;padding:0 16px 10px;overflow-x:auto;">
+        <span style="font-size:14px;font-weight:800;color:#30363F;border-bottom:2.5px solid #30363F;padding:4px 0;white-space:nowrap;margin-right:8px;">All 200</span>
+        <span style="font-size:14px;color:#6E7279;font-weight:500;padding:4px 8px;white-space:nowrap;">Salad 72</span>
+        <span style="font-size:14px;color:#6E7279;font-weight:500;padding:4px 8px;white-space:nowrap;">Buffet 57</span>
+        <span style="font-size:14px;color:#6E7279;font-weight:500;padding:4px 8px;white-space:nowrap;">Vegetarian 57</span>
+      </div>
+      <div class="provider-card">
+        <div class="provider-thumb" style="background:linear-gradient(135deg,#f8c8d4,#fde8ee);">
+          🍜
+          <span class="agreement-badge">Agreement</span>
+        </div>
+        <div>
+          <div class="provider-name">Lie Mi Lunch Kitchen</div>
+          <div class="provider-distance">↔ 45 m</div>
+          <div class="provider-tags">Chinese food, Salad, Thai food, Vegetarian</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-thumb" style="background:linear-gradient(135deg,#d4ecd4,#e8f5e8);">🥗</div>
+        <div>
+          <div class="provider-name">Ravintola Factory Ruoholahti</div>
+          <div class="provider-distance">↔ 54 m</div>
+          <div class="provider-tags">Salad, Buffet, Vegetarian</div>
+        </div>
+      </div>
+      <div style="height:12px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label" style="color:#30363F;font-weight:800;">Discovery</span>
+      </div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Purchases</span></div>
+      <div class="nav-item" onclick="showScreen('balances')">
+        <span class="nav-icon">💳</span><span class="nav-label">Balances</span>
+      </div>
+      <div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">User</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Ski Rec Detail
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-rec-ski">
+    <div class="detail-topbar">
+      <div class="back-btn" onclick="showScreen('discovery')">‹</div>
+      <div class="detail-topbar-title">Recommendation</div>
+    </div>
+    <div class="scroll-content">
+      <div class="detail-hero" style="background:linear-gradient(135deg,#6C10B9,#9B3ED4);">
+        <div class="detail-signal-pill">❄️ Snow forecast this weekend</div>
+        <div class="detail-hero-title">Hit the slopes while you can</div>
+        <div class="detail-hero-desc">Snow is forecast near Helsinki this weekend. Use your Sport benefit for a ski pass or equipment rental before the season ends.</div>
+      </div>
+
+      <div class="why-box">
+        <span style="font-size:16px;flex-shrink:0;">💡</span>
+        <span class="why-box-text"><strong>Why this recommendation?</strong> Snow is forecast in the Helsinki region this weekend. You selected skiing as an interest and have €280 remaining in your Sport benefit — that's enough for a full day on the slopes.</span>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Your Sport Benefit</div>
+        <div class="budget-card">
+          <div class="budget-cat-row"><span>🏃</span><span class="budget-cat-name">Sport</span></div>
+          <div class="budget-big">€280 <span>of €400 remaining</span></div>
+          <div class="budget-bar-bg">
+            <div class="budget-bar-fill" style="width:30%;background:#6C10B9;"></div>
+          </div>
+          <div class="budget-bar-labels"><span>30% used</span><span>Expires 31.12.2026</span></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Providers near you</div>
+        <div class="providers-list">
+          <div class="provider-row">
+            <div class="prov-thumb" style="background:#EBF0FB;">⛷️</div>
+            <div>
+              <div class="provider-name">Talma Ski Resort</div>
+              <div class="provider-distance">↔ 38 km</div>
+              <div class="provider-tags">Ski pass, Rental equipment</div>
+            </div>
+          </div>
+          <div class="provider-row">
+            <div class="prov-thumb" style="background:#F0EBFA;">🎿</div>
+            <div>
+              <div class="provider-name">Intersport Rental</div>
+              <div class="provider-distance">↔ 1.2 km</div>
+              <div class="provider-tags">Ski rental, Snowboard rental</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-cta-wrap">
+        <button class="btn-pink">Use Sport benefit →</button>
+        <div class="cta-note">You'll be redirected to the provider's booking page</div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active"><span class="nav-icon">🔍</span><span class="nav-label" style="color:#30363F;font-weight:800;">Discovery</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Purchases</span></div>
+      <div class="nav-item" onclick="showScreen('balances')"><span class="nav-icon">💳</span><span class="nav-label">Balances</span></div>
+      <div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">User</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Cinema Rec Detail
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-rec-cinema">
+    <div class="detail-topbar">
+      <div class="back-btn" onclick="showScreen('discovery')">‹</div>
+      <div class="detail-topbar-title">Recommendation</div>
+    </div>
+    <div class="scroll-content">
+      <div class="detail-hero" style="background:linear-gradient(135deg,#E5007D,#B5006D);">
+        <div class="detail-signal-pill">🎬 New release near you</div>
+        <div class="detail-hero-title">Mission Impossible is out</div>
+        <div class="detail-hero-desc">The new instalment opens at Finnkino Tennispalatsi next week, just 500m from you. Use your Culture benefit to book tickets.</div>
+      </div>
+
+      <div class="why-box">
+        <span style="font-size:16px;flex-shrink:0;">💡</span>
+        <span class="why-box-text"><strong>Why this recommendation?</strong> You rated Mission Impossible: Dead Reckoning ★★★★★ on IMDB. The next film in the series opens nearby next week — and your Culture benefit has €200 remaining.</span>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Your Culture Benefit</div>
+        <div class="budget-card">
+          <div class="budget-cat-row"><span>🎭</span><span class="budget-cat-name">Culture</span></div>
+          <div class="budget-big">€200 <span>of €400 remaining</span></div>
+          <div class="budget-bar-bg">
+            <div class="budget-bar-fill" style="width:50%;background:#E5007D;"></div>
+          </div>
+          <div class="budget-bar-labels"><span>50% used</span><span>Expires 31.12.2026</span></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Cinemas near you</div>
+        <div class="providers-list">
+          <div class="provider-row">
+            <div class="prov-thumb" style="background:#FCEEF7;">🎬</div>
+            <div>
+              <div class="provider-name">Finnkino Tennispalatsi</div>
+              <div class="provider-distance">↔ 500 m</div>
+              <div class="provider-tags">Cinema · IMAX · Tickets</div>
+            </div>
+          </div>
+          <div class="provider-row">
+            <div class="prov-thumb" style="background:#EEF3FC;">🎥</div>
+            <div>
+              <div class="provider-name">Bio Rex Helsinki</div>
+              <div class="provider-distance">↔ 1.8 km</div>
+              <div class="provider-tags">Cinema · Tickets</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-cta-wrap">
+        <button class="btn-pink">Use Culture benefit →</button>
+        <div class="cta-note">You'll be redirected to the provider's booking page</div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active"><span class="nav-icon">🔍</span><span class="nav-label" style="color:#30363F;font-weight:800;">Discovery</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Purchases</span></div>
+      <div class="nav-item" onclick="showScreen('balances')"><span class="nav-icon">💳</span><span class="nav-label">Balances</span></div>
+      <div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">User</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Balances
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-balances">
+    <div class="bal-header">Balances</div>
+    <div class="bal-tabs">
+      <div class="bal-tab on">€ Balances</div>
+      <div class="bal-tab">ⓘ Benefit information</div>
+    </div>
+    <div class="scroll-content">
+
+      <!-- Benefit Calendar CTA -->
+      <div onclick="showScreen('calendar')" style="margin:12px 16px 0;background:#F0E6FB;border:1.5px solid #DDD0F5;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+        <span style="width:40px;height:40px;background:#6C10B9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📅</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:800;color:#30363F;margin-bottom:2px;">2026 Benefit Calendar</div>
+          <div style="font-size:11px;color:#6E7279;">Plan your budget across all 12 months</div>
+        </div>
+        <span style="color:#6C10B9;font-size:20px;">›</span>
+      </div>
+
+      <!-- Lunch: good utilisation -->
+      <div class="bal-card">
+        <div class="bal-cat-row"><span>🍴</span><span class="bal-cat-label">Lunch</span></div>
+        <div class="bal-amount-row">
+          <div class="bal-amount">393,95 €</div>
+          <div class="bal-sub">28 usages left</div>
+        </div>
+        <div class="util-wrap">
+          <div class="util-fill" style="width:68%;background:#3B9CDB;border-radius:99px;height:7px;"></div>
+          <div class="util-marker" style="left:14%;"></div>
+        </div>
+        <div class="util-labels"><span>68% used</span><span>▎ Feb &nbsp;·&nbsp; Dec 31</span></div>
+      </div>
+
+      <!-- Sport: low, planner tip -->
+      <div class="bal-card">
+        <div class="bal-cat-row"><span>🏃</span><span class="bal-cat-label">Sport</span></div>
+        <div class="bal-amount-row">
+          <div class="bal-amount">280,00 €</div>
+          <div class="bal-sub">of €400 remaining</div>
+        </div>
+        <div class="util-wrap">
+          <div class="util-fill" style="width:30%;background:#FF612F;border-radius:99px;height:7px;"></div>
+          <div class="util-marker" style="left:14%;"></div>
+        </div>
+        <div class="util-labels"><span>30% used</span><span>▎ Feb &nbsp;·&nbsp; Dec 31</span></div>
+        <div class="util-alert alert-purple" onclick="showScreen('rec-ski')">
+          ✨ Planner tip: Snow forecast this weekend — book a ski pass →
+        </div>
+      </div>
+
+      <!-- Culture: medium, planner tip -->
+      <div class="bal-card">
+        <div class="bal-cat-row"><span>🎭</span><span class="bal-cat-label">Culture</span></div>
+        <div class="bal-amount-row">
+          <div class="bal-amount">200,00 €</div>
+          <div class="bal-sub">of €400 remaining</div>
+        </div>
+        <div class="util-wrap">
+          <div class="util-fill" style="width:50%;background:#E5007D;border-radius:99px;height:7px;"></div>
+          <div class="util-marker" style="left:14%;"></div>
+        </div>
+        <div class="util-labels"><span>50% used</span><span>▎ Feb &nbsp;·&nbsp; Dec 31</span></div>
+        <div class="util-alert alert-purple" onclick="showScreen('rec-cinema')">
+          ✨ Planner tip: Mission Impossible opens nearby next week →
+        </div>
+      </div>
+
+      <!-- Health: never used -->
+      <div class="bal-card">
+        <div class="bal-cat-row"><span>❤️</span><span class="bal-cat-label">Health</span></div>
+        <div class="bal-amount-row">
+          <div class="bal-amount">400,00 €</div>
+          <div class="bal-sub">never used</div>
+        </div>
+        <div class="util-wrap">
+          <div class="util-fill" style="width:1%;background:#DC2626;border-radius:99px;height:7px;"></div>
+          <div class="util-marker" style="left:14%;"></div>
+        </div>
+        <div class="util-labels"><span>0% used</span><span>▎ Feb &nbsp;·&nbsp; Dec 31</span></div>
+        <div class="util-alert alert-red">⚠ You haven't used this benefit yet in 2026</div>
+      </div>
+
+      <div style="height:16px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="showScreen('discovery')"><span class="nav-icon">🔍</span><span class="nav-label">Discovery</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Purchases</span></div>
+      <div class="nav-item active"><span class="nav-icon">💳</span><span class="nav-label" style="color:#30363F;font-weight:800;">Balances</span></div>
+      <div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">User</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SCREEN: Benefit Calendar
+  ══════════════════════════════════ -->
+  <div class="screen" id="screen-calendar">
+    <div class="cal-screen-bg">
+
+      <div class="cal-header">
+        <div class="cal-header-top">
+          <div class="cal-back" onclick="showScreen('discovery')">‹</div>
+          <div class="cal-title">2026 Benefit Calendar</div>
+        </div>
+        <div class="cal-meta">Sport Benefit · €400 total · Goal: 95%+ usage · Spread monthly</div>
+        <div class="cal-stats">
+          <div class="cal-stat">
+            <div class="cal-stat-label">Spent so far</div>
+            <div class="cal-stat-value green">€120</div>
+          </div>
+          <div class="cal-stat">
+            <div class="cal-stat-label">Remaining</div>
+            <div class="cal-stat-value yellow">€280</div>
+          </div>
+          <div class="cal-stat">
+            <div class="cal-stat-label">On track</div>
+            <div class="cal-stat-value green">✓ Yes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cal-scroll">
+        <div class="cal-grid">
+
+          <!-- January — done -->
+          <div class="cal-month done">
+            <div class="cal-month-name">January</div>
+            <div class="cal-status status-done">✓ Done</div>
+            <div class="cal-amount">€45 spent</div>
+            <div class="cal-activity">Ski pass, equipment rental</div>
+          </div>
+
+          <!-- February — current -->
+          <div class="cal-month current">
+            <div class="cal-month-name">February</div>
+            <div class="cal-status status-current">● In progress</div>
+            <div class="cal-amount">€40–45</div>
+            <div class="cal-activity">Continue skiing · add late-Feb gym session</div>
+            <div class="cal-tip">€30–40 more to book this month</div>
+          </div>
+
+          <!-- March -->
+          <div class="cal-month">
+            <div class="cal-month-name">March</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€30–35</div>
+            <div class="cal-activity">Gym / fitness classes · build routine</div>
+            <div class="cal-tip">Book by Mar 15 — don't wait</div>
+          </div>
+
+          <!-- April -->
+          <div class="cal-month">
+            <div class="cal-month-name">April</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€30–35</div>
+            <div class="cal-activity">Outdoor running / cycling · spring kick-off</div>
+          </div>
+
+          <!-- May -->
+          <div class="cal-month">
+            <div class="cal-month-name">May</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€30–35</div>
+            <div class="cal-activity">Try a new category · tennis / padel</div>
+          </div>
+
+          <!-- June -->
+          <div class="cal-month">
+            <div class="cal-month-name">June</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€35–40</div>
+            <div class="cal-activity">Swimming / water sports · stay consistent</div>
+          </div>
+
+          <!-- July -->
+          <div class="cal-month">
+            <div class="cal-month-name">July</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€35–40</div>
+            <div class="cal-activity">Outdoor fitness · hiking · cycling</div>
+          </div>
+
+          <!-- August -->
+          <div class="cal-month">
+            <div class="cal-month-name">August</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€35–40</div>
+            <div class="cal-activity">Gym renewal · group classes · back to routine</div>
+          </div>
+
+          <!-- September -->
+          <div class="cal-month">
+            <div class="cal-month-name">September</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€30–35</div>
+            <div class="cal-activity">Autumn running · group fitness</div>
+          </div>
+
+          <!-- October -->
+          <div class="cal-month">
+            <div class="cal-month-name">October</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€30–35</div>
+            <div class="cal-activity">Indoor climbing · squash · swim</div>
+            <div class="cal-tip">Month you usually skip — don't</div>
+          </div>
+
+          <!-- November -->
+          <div class="cal-month">
+            <div class="cal-month-name">November</div>
+            <div class="cal-status status-upcoming">Upcoming</div>
+            <div class="cal-amount upcoming">€25–30</div>
+            <div class="cal-activity">Pre-winter fitness · yoga / group classes</div>
+          </div>
+
+          <!-- December — urgent -->
+          <div class="cal-month urgent">
+            <div class="cal-month-name">December</div>
+            <div class="cal-status status-urgent">⚡ Use it all</div>
+            <div class="cal-amount upcoming">€30–35 + remaining</div>
+            <div class="cal-activity">Winter sports · annual gym membership</div>
+            <div class="cal-tip orange">Critical: expires Dec 31</div>
+          </div>
+
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item active" onclick="showScreen('discovery')">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label" style="color:#30363F;font-weight:800;">Discovery</span>
+        </div>
+        <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Purchases</span></div>
+        <div class="nav-item" onclick="showScreen('balances')"><span class="nav-icon">💳</span><span class="nav-label">Balances</span></div>
+        <div class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">User</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<div class="demo-label" style="font-size:11px; opacity:0.5;">
+  Onboarding → Discovery → Tap a card → Balances · Benefit Calendar
+</div>
+
+<script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    const sc = document.getElementById('screen-' + id).querySelector('.scroll-content');
+    if (sc) sc.scrollTop = 0;
+  }
+
+  function pickOne(el) {
+    el.parentElement.querySelectorAll('.lifestyle-opt').forEach(o => o.classList.remove('on'));
+    el.classList.add('on');
+  }
+</script>
+</body>
+</html>
