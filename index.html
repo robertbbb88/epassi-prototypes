@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Epassi — Module Selection Prototypes</title>
+    <title>Epassi — Prototypes</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -22,6 +22,11 @@
         }
         h1 { font-size: 28px; font-weight: 800; color: #1A1A1A; margin-bottom: 8px; }
         .subtitle { font-size: 15px; color: #888; margin-bottom: 40px; line-height: 1.5; }
+        .section-label {
+            font-size: 11px; font-weight: 700; color: #BBB;
+            letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; margin-top: 32px;
+        }
+        .section-label:first-of-type { margin-top: 0; }
         .card {
             background: white; border-radius: 20px; padding: 24px;
             margin-bottom: 14px; text-decoration: none;
@@ -36,6 +41,7 @@
             background: #1A1A1A; border-radius: 100px; padding: 3px 10px;
         }
         .card-badge.green { background: #4DC375; }
+        .card-badge.blue { background: #3B82F6; }
         .card-desc { font-size: 14px; color: #888; line-height: 1.5; margin-bottom: 12px; }
         .card-meta { font-size: 13px; color: #BBB; }
         .card-meta span { color: #1A1A1A; font-weight: 600; }
@@ -48,8 +54,10 @@
 <body>
 <div class="wrap">
     <div class="label">Epassi One V1 · H1 Discovery</div>
-    <h1>Module Selection<br>Prototypes</h1>
-    <p class="subtitle">Interactive prototypes for the personalised module selection hypothesis. For user testing — March 2026.</p>
+    <h1>Prototypes</h1>
+    <p class="subtitle">Interactive prototypes for user testing — March 2026.</p>
+
+    <div class="section-label">Module Selection</div>
 
     <a class="card" href="prototype-module-selection.html">
         <div class="card-head">
@@ -72,6 +80,17 @@
     <div class="note">
         Depending on feedback from user interviews, engineering estimates, and data readiness, one of these prototypes will be selected as the basis for the V1 build.
     </div>
+
+    <div class="section-label">Benefit Planner</div>
+
+    <a class="card" href="prototype-benefit-planner.html">
+        <div class="card-head">
+            <div class="card-title">Benefit Planner</div>
+            <div class="card-badge blue">AI-assisted</div>
+        </div>
+        <div class="card-desc">An AI-guided flow that helps employees plan and allocate their benefit budget across categories based on their lifestyle and goals.</div>
+        <div class="card-meta">Conversational · <span>Personalised allocation</span></div>
+    </a>
 </div>
 </body>
 </html>
